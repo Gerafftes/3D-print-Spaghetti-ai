@@ -1,0 +1,15 @@
+# DEVLOG #01
+
+The Spaghetti AI detector is now running as a Home Assistant app and watching the Guider 2S camera in safe **shadow mode**.
+
+![Live view from the Guider 2S printer camera](devlog-01-printer-camera.jpg)
+
+I first created and verified a protected Home Assistant backup. Then I installed the CPU-only ONNX detector, connected its status to MQTT, and checked the live service: it currently reports `normal`, a score of `0.0`, and no error.
+
+The most important decision was keeping detection separate from printer control. Shadow-mode detections can be recorded for evaluation, but the software cannot pause or abort the active print. Phone notifications and the Home Assistant decision automations also remain disabled.
+
+The difficult part was fitting the model into a lightweight Home Assistant app. I limited ONNX Runtime to one CPU thread and disabled its CPU memory arena instead of deploying the much larger full Obico server.
+
+This milestone proves that the monitoring pipeline is installed and running. It does **not** yet prove that spaghetti detection is accurate enough for real printer decisions.
+
+Next: complete two full shadow-mode prints, review every detection, and only then test the phone notification and a controlled pause/continue decision.

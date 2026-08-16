@@ -1,75 +1,83 @@
 # 3D Print Spaghetti AI
 
-Lokale, CPU-basierte Spaghetti-Erkennung für den FlashForge Guider 2S. Der Dienst liest ausschließlich Einzelbilder der Kamera, wertet sie mit dem Obico-Fehlererkennungsmodell aus und meldet bestätigte Ereignisse über MQTT an Home Assistant.
+A local, CPU-only print-failure detector for the FlashForge Guider 2S that watches camera snapshots and reports confirmed events to Home Assistant over MQTT.
 
-## Sicherheitsmodell
+![Live view from the Guider 2S printer camera](devlog-01-printer-camera.jpg)
 
-- `SHADOW_MODE=true` ist der Standard. Treffer werden gespeichert und unter `spaghetti_ai/shadow_alert` protokolliert, aber nicht an die Benachrichtigungsautomation übergeben.
-- Der Erkennungsdienst enthält keinerlei FlashForge-Steuerprotokoll und kann den Drucker nicht selbst anhalten.
-- Erst Home Assistant darf nach einer expliziten Handy-Aktion den vorhandenen Pause-Button betätigen.
-- Die Abort-Entität und rohe Druckerbefehle werden nicht verwendet.
+## Try it
 
-## Erkennung
+There is no public demo. The project runs inside a local Home Assistant installation and requires access to a printer camera and an MQTT broker.
 
-- Snapshot: `http://192.168.178.130:8080/?action=snapshot`
-- Abfrageintervall: 5 Sekunden; bei langsamer Inferenz automatisch 10 Sekunden.
-- Modelleingabe: maximal 320 Pixel an der längsten Kante, optionaler normalisierter ROI.
-- Alarm: mindestens 3 positive Bilder im Fenster der letzten 5 und mittlere positive Konfidenz mindestens 0,65.
-- Zustände: `normal`, `suspect`, `alerted`, `snoozed`.
-- Aufbewahrung: Original, Annotation und JSON-Metadaten für 7 Tage.
-- ONNX Runtime nutzt genau einen CPU-Thread und keine CPU-Memory-Arena. Der lokale ARM64-Smoke-Test lag bei rund 0,29 Sekunden je Bild und etwa 405 MiB Maximalbelegung; auf dem Raspberry Pi wird dies vor Produktionsfreigabe erneut gemessen.
+### Home Assistant quick start
 
-## HTTP und MQTT
+1. Create and verify a Home Assistant backup.
+2. In **Settings → Apps → App store → Repositories**, add `https://github.com/Gerafftes/3D-print-Spaghetti-ai`.
+3. Install **3D Print Spaghetti AI**, enter your camera snapshot URL, and keep `shadow_mode: true` while validating the detector.
 
-HTTP auf Port 8099:
+A typical Guider 2S snapshot URL has the form `http://PRINTER_IP:8080/?action=snapshot`. Do not expose the camera or the status API to the public internet.
+
+## What it does
+
+- Reads individual printer-camera snapshots without sending commands to the printer.
+- Runs the pinned Obico ONNX model locally with one CPU thread.
+- Requires three positive frames within the latest five before confirming an event.
+- Publishes online state, detection state, score, and confirmed events over MQTT.
+- Stores original images, annotated images, and event metadata for seven days.
+- Starts in shadow mode, where detections are recorded but cannot trigger the phone decision workflow.
+
+## Current status
+
+| Capability | Status |
+| --- | --- |
+| Detector, state machine, storage, HTTP API, and MQTT discovery | Implemented |
+| Automated unit tests | 8 passed locally on 16 August 2026 |
+| Home Assistant app installation and camera transport | Verified on the local setup |
+| Two complete shadow-mode print evaluations | Not completed yet |
+| Phone notification with image | Prepared, but disabled and untested |
+| Controlled pause/continue decision | Disabled and untested |
+| Production-ready automatic intervention | No |
+
+The detector is currently being evaluated in shadow mode. A running service and a reachable camera do not prove detection accuracy.
+
+## Safety model
+
+The detector has no FlashForge control protocol and cannot pause or abort a print by itself. In shadow mode, confirmed events are published only to `spaghetti_ai/shadow_alert`.
+
+The planned production flow keeps the final decision with the user:
+
+1. Home Assistant sends a notification containing the event image.
+2. The user chooses whether to continue or pause.
+3. Home Assistant may call only the existing pause button after a separate controlled test.
+
+Abort commands and raw printer commands are outside this project's scope.
+
+## How detection works
+
+The app fetches a snapshot every five seconds and scales the configured region of interest to at most 320 pixels on its longest edge. ONNX Runtime performs CPU inference with one intra-op and one inter-op thread and without its CPU memory arena.
+
+A single high score is not enough to create an event. The state machine looks at a five-frame window, requires at least three positive frames, and requires their average confidence to reach `0.65`. This reduces one-frame false alarms at the cost of a short confirmation delay.
+
+The service exposes these local HTTP endpoints on port `8099`:
 
 - `/health`
 - `/status`
 - `/latest.jpg`
 - `/alerts/latest.jpg`
 
-MQTT:
+## Local development
 
-- `spaghetti_ai/alert` – bestätigter Produktionsalarm
-- `spaghetti_ai/shadow_alert` – bestätigter Shadow-Alarm
-- `spaghetti_ai/decision` – `continue` oder `pause`
-- `spaghetti_ai/status/*` – Onlinezustand, Status und Score
-
-## Installation in Home Assistant
-
-Das Repository kann unter **Einstellungen → Apps → App-Store → Repositories** hinzugefügt werden:
-
-```text
-https://github.com/Gerafftes/3d-print-spaghetti-ai
-```
-
-Danach erscheint **3D Print Spaghetti AI** im App-Store. Die erste Installation startet immer im Shadow-Modus und kann den Drucker nicht steuern.
-
-## Lokale Entwicklung
+Requirements: Python 3.11 and the native libraries required by OpenCV and ONNX Runtime. From the `spaghetti_ai` directory:
 
 ```sh
-cd spaghetti_ai
 python3.11 -m venv .venv
-. .venv/bin/activate
-pip install -e '.[test]'
-python -m unittest discover -s tests -v
+.venv/bin/pip install -e '.[test]'
+.venv/bin/python -m pytest -q
 ```
 
-Der Container lädt das fest benannte Obico-Modell beim Build und verifiziert SHA-256 `0a6ebd8e30dbf6a450c50f9c0a5406f04ba7eb1c99fd5996e888c78bb383b9aa`.
+The container downloads the pinned Obico model during the build and verifies SHA-256 `0a6ebd8e30dbf6a450c50f9c0a5406f04ba7eb1c99fd5996e888c78bb383b9aa` before installing it.
 
-## Home-Assistant-App
+## Credits and license
 
-Der Unterordner `spaghetti_ai/` enthält die Home-Assistant-App und startet absichtlich mit `shadow_mode: true`. Danach folgen zwei vollständige normale Shadow-Drucke, bevor Benachrichtigungen oder Druckersteuerung aktiviert werden.
+The model format and CPU post-processing are based on [Obico's `ml_api` at revision `49c0bc7`](https://github.com/TheSpaghettiDetective/obico-server/tree/49c0bc7001a3fd8d56297fc3032ba287bfe1d50b/ml_api). The pinned model is `model-weights-5a6b1be1fa.onnx`.
 
-Die App bindet Home Assistants Konfigurationsordner gemäß aktueller App-Spezifikation unter `/homeassistant` ein und schreibt ausschließlich Alarmbilder nach `/homeassistant/www/spaghetti-ai`.
-
-MQTT-Zugangsdaten werden standardmäßig über Home Assistants Supervisor-Service-Discovery bezogen. Manuelle Zugangsdaten in den App-Optionen überschreiben diese Erkennung nur, wenn ausdrücklich ein Benutzername eingetragen ist.
-
-## Herkunft und Lizenz
-
-Das Modellformat und die CPU-Nachverarbeitung basieren auf Obicos `ml_api` in Revision `49c0bc7001a3fd8d56297fc3032ba287bfe1d50b`:
-
-- https://github.com/TheSpaghettiDetective/obico-server/tree/49c0bc7001a3fd8d56297fc3032ba287bfe1d50b/ml_api
-- Modell: `model-weights-5a6b1be1fa.onnx`
-
-Dieses Projekt steht deshalb unter **GNU Affero General Public License v3.0 only**. Siehe `LICENSE`.
+This project is licensed under the [GNU Affero General Public License v3.0 only](LICENSE).
