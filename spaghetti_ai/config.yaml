@@ -1,0 +1,41 @@
+name: 3D Print Spaghetti AI
+version: 0.1.0
+slug: spaghetti_ai
+description: Read-only Guider 2S failure detection with MQTT alerts
+url: https://github.com/Gerafftes/3d-print-spaghetti-ai
+arch:
+  - aarch64
+startup: application
+boot: auto
+init: false
+hassio_api: true
+services:
+  - mqtt:need
+watchdog: http://[HOST]:[PORT:8099]/health
+ports:
+  8099/tcp: 8099
+ports_description:
+  8099/tcp: Status and alert image API
+map:
+  - type: homeassistant_config
+    read_only: false
+options:
+  snapshot_url: http://192.168.178.130:8080/?action=snapshot
+  mqtt_host: core-mosquitto
+  mqtt_port: 1883
+  mqtt_username: ""
+  mqtt_password: ""
+  roi: 0,0,1,1
+  poll_interval_seconds: 5
+  aggregate_threshold: 0.65
+  shadow_mode: true
+schema:
+  snapshot_url: url
+  mqtt_host: str
+  mqtt_port: port
+  mqtt_username: str?
+  mqtt_password: password?
+  roi: str
+  poll_interval_seconds: float
+  aggregate_threshold: float
+  shadow_mode: bool
