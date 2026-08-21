@@ -1,11 +1,12 @@
 # 3D Print Spaghetti AI
 
-A local, CPU-only print-failure detector for the FlashForge Guider 2S that watches camera snapshots and reports confirmed events to Home Assistant over MQTT.
-
 [![License: AGPL v3](https://img.shields.io/github/license/Gerafftes/3D-print-Spaghetti-ai?label=license)](LICENSE)
 [![Home Assistant App](https://img.shields.io/badge/Home%20Assistant-App-41BDF5?logo=homeassistant&logoColor=white)](https://developers.home-assistant.io/docs/apps/repository/)
 [![Architecture: aarch64](https://img.shields.io/badge/architecture-aarch64-6f42c1)](spaghetti_ai/build.yaml)
 [![Default mode: shadow](https://img.shields.io/badge/default%20mode-shadow%20safe-2ea44f)](#safety-model)
+
+A local, CPU-only print-failure detector for the FlashForge Guider 2S that watches camera snapshots and reports confirmed events to Home Assistant over MQTT.
+
 
 ![Live view from the Guider 2S printer camera](devlog-01-printer-camera.jpg)
 
