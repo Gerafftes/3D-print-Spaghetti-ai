@@ -1,6 +1,7 @@
 # Documentation-only template. Home Assistant does not load this .example file.
 # Replace the notification service and keep the automation disabled until the
 # shadow-mode and controlled pause/continue tests have passed.
+# The image URL points to the annotated copy with a red box around detections.
 - id: spaghetti_ai_alarm_aufs_iphone
   alias: Spaghetti AI - Alarm aufs iPhone (Vorlage, deaktiviert)
   description: Sends a printer-camera image for a manual decision.

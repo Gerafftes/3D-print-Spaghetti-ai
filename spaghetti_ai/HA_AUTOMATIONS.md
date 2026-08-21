@@ -11,7 +11,7 @@ Eine kopierbare, absichtlich deaktivierte Alarmvorlage liegt in [`HA_AUTOMATIONS
 
 - Trigger: MQTT `spaghetti_ai/alert`
 - Ziel: `notify.mobile_app_<your_device>`
-- Bild: `/local/spaghetti-ai/<event-id>.jpg`
+- Bild: `/local/spaghetti-ai/<event-id>.jpg` (annotierte Kopie mit rotem Rahmen um erkannte Bereiche)
 - Aktionen: `SPAGHETTI_PAUSE`, `SPAGHETTI_CONTINUE`
 - Fester Notification-Tag verhindert doppelte Meldungen.
 

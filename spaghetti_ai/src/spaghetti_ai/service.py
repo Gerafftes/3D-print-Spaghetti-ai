@@ -20,6 +20,68 @@ from .web import start_web_server
 LOGGER = logging.getLogger(__name__)
 
 
+def annotate_alert_image(
+    image: np.ndarray,
+    detections: list[Detection],
+    roi_offset: tuple[int, int],
+    roi_scale: float,
+) -> np.ndarray:
+    """Draw readable red boxes for detector coordinates on the camera image."""
+    if roi_scale <= 0:
+        raise ValueError("roi_scale must be positive")
+
+    image_height, image_width = image.shape[:2]
+    if image_height == 0 or image_width == 0:
+        raise ValueError("image must not be empty")
+
+    annotated = image.copy()
+    left, top = roi_offset
+    for detection in detections:
+        x1 = int(round(left + detection.x1 / roi_scale))
+        y1 = int(round(top + detection.y1 / roi_scale))
+        x2 = int(round(left + detection.x2 / roi_scale))
+        y2 = int(round(top + detection.y2 / roi_scale))
+        x1, x2 = sorted(
+            (max(0, min(x1, image_width - 1)), max(0, min(x2, image_width - 1)))
+        )
+        y1, y2 = sorted(
+            (max(0, min(y1, image_height - 1)), max(0, min(y2, image_height - 1)))
+        )
+
+        cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 0, 255), 4)
+        label = f"Spaghetti {detection.confidence:.0%}"
+        (label_width, label_height), baseline = cv2.getTextSize(
+            label,
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.65,
+            2,
+        )
+        label_bottom = min(image_height - 1, max(y1, label_height + baseline + 6))
+        label_top = max(0, label_bottom - label_height - baseline - 6)
+        label_right = min(image_width - 1, x1 + label_width + 8)
+        cv2.rectangle(
+            annotated,
+            (x1, label_top),
+            (label_right, label_bottom),
+            (0, 0, 255),
+            -1,
+        )
+        cv2.putText(
+            annotated,
+            label,
+            (
+                min(image_width - 1, x1 + 4),
+                max(label_height, label_bottom - baseline - 3),
+            ),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.65,
+            (255, 255, 255),
+            2,
+            cv2.LINE_AA,
+        )
+    return annotated
+
+
 class SpaghettiService:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
@@ -130,23 +192,7 @@ class SpaghettiService:
     ) -> None:
         now = datetime.now(timezone.utc)
         event_id = f"{now.strftime('%Y%m%dT%H%M%SZ')}-{uuid4().hex[:8]}"
-        annotated = image.copy()
-        left, top = roi_offset
-        for detection in detections:
-            x1 = int(left + detection.x1 / roi_scale)
-            y1 = int(top + detection.y1 / roi_scale)
-            x2 = int(left + detection.x2 / roi_scale)
-            y2 = int(top + detection.y2 / roi_scale)
-            cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 0, 255), 3)
-            cv2.putText(
-                annotated,
-                f"Spaghetti {detection.confidence:.0%}",
-                (x1, max(20, y1 - 8)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.65,
-                (0, 0, 255),
-                2,
-            )
+        annotated = annotate_alert_image(image, detections, roi_offset, roi_scale)
         success, encoded = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 92])
         if not success:
             raise ValueError("Failed to encode annotated alert image")

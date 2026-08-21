@@ -1,5 +1,5 @@
 name: 3D Print Spaghetti AI
-version: 0.1.0
+version: 0.1.1
 slug: spaghetti_ai
 description: Read-only Guider 2S failure detection with MQTT alerts
 url: https://github.com/Gerafftes/3d-print-spaghetti-ai

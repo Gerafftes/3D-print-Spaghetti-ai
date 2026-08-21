@@ -35,6 +35,7 @@ See the [app behavior and validation notes](spaghetti_ai/DOCS.md) for defaults, 
 - Reads individual printer-camera snapshots without sending commands to the printer.
 - Runs the pinned Obico ONNX model locally with one CPU thread.
 - Requires three positive frames within the latest five before confirming an event.
+- Saves the alert image with a red bounding box and confidence label around each detected area.
 - Publishes online state, detection state, score, and confirmed events over MQTT.
 - Stores original images, annotated images, and event metadata for seven days.
 - Starts in shadow mode, where detections are recorded but cannot trigger the phone decision workflow.
@@ -44,7 +45,7 @@ See the [app behavior and validation notes](spaghetti_ai/DOCS.md) for defaults, 
 | Capability | Status |
 | --- | --- |
 | Detector, state machine, storage, HTTP API, and MQTT discovery | Implemented |
-| Automated unit tests | 8 passed locally on 16 August 2026 |
+| Automated unit tests | 10 tests in suite; CI validates every push |
 | Home Assistant app installation and camera transport | Verified on the local setup |
 | Two complete shadow-mode print evaluations | Not completed yet |
 | Phone notification with image | Prepared, but disabled and untested |
