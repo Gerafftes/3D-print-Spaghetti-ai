@@ -56,7 +56,7 @@ class Settings:
         return cls(
             snapshot_url=os.getenv(
                 "SNAPSHOT_URL",
-                "http://192.168.178.130:8080/?action=snapshot",
+                "http://192.0.2.1:8080/?action=snapshot",
             ),
             mqtt_host=os.getenv("MQTT_HOST", "core-mosquitto"),
             mqtt_port=_int("MQTT_PORT", 1883),

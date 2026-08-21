@@ -20,7 +20,8 @@ map:
   - type: homeassistant_config
     read_only: false
 options:
-  snapshot_url: http://192.168.178.130:8080/?action=snapshot
+  # Replace this documentation-safe example with the printer's local URL.
+  snapshot_url: http://192.0.2.1:8080/?action=snapshot
   mqtt_host: core-mosquitto
   mqtt_port: 1883
   mqtt_username: ""

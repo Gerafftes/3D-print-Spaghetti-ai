@@ -8,6 +8,8 @@ A local, CPU-only print-failure detector for the FlashForge Guider 2S that watch
 
 There is no public demo. The project runs inside a local Home Assistant installation and requires access to a printer camera and an MQTT broker.
 
+This repository is a **Home Assistant app repository**, not a HACS custom integration. Apps are added from the Home Assistant App store; HACS is for custom integrations, dashboard plugins, and other Home Assistant content.
+
 ### Home Assistant quick start
 
 1. Create and verify a Home Assistant backup.
@@ -15,6 +17,8 @@ There is no public demo. The project runs inside a local Home Assistant installa
 3. Install **3D Print Spaghetti AI**, enter your camera snapshot URL, and keep `shadow_mode: true` while validating the detector.
 
 A typical Guider 2S snapshot URL has the form `http://PRINTER_IP:8080/?action=snapshot`. Do not expose the camera or the status API to the public internet.
+
+Apps are available on Home Assistant OS and Supervised installations. See the [official app repository guide](https://developers.home-assistant.io/docs/apps/repository/) for the repository workflow.
 
 ## What it does
 

@@ -8,7 +8,7 @@ Die Standardoption `shadow_mode: true` bleibt für die ersten zwei vollständige
 
 ## Standardwerte
 
-- Snapshot: `http://192.168.178.130:8080/?action=snapshot`
+- Snapshot: `http://PRINTER_IP:8080/?action=snapshot`
 - Intervall: 5 Sekunden
 - Bestätigung: 3 positive Bilder aus den letzten 5
 - Mindestwert: 0,65
