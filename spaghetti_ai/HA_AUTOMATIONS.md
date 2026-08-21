@@ -2,6 +2,8 @@
 
 Vor dem Aktivieren produktiver Automationen muss ein vollständiges Home-Assistant-Backup erstellt und verifiziert werden. Die Automationen sollten bis nach zwei vollständigen Shadow-Drucken und einem kontrollierten Pause-/Fortsetzen-Test ausgeschaltet bleiben.
 
+Eine kopierbare, absichtlich deaktivierte Alarmvorlage liegt in [`HA_AUTOMATIONS.yaml.example`](HA_AUTOMATIONS.yaml.example). Die Datei mit `.example`-Endung wird von Home Assistant nicht geladen.
+
 - `automation.spaghetti_ai_alarm_aufs_iphone`: `off`
 - `automation.spaghetti_ai_entscheidung_vom_iphone`: `off`
 

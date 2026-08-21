@@ -1,0 +1,53 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Python tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: spaghetti_ai
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: spaghetti_ai/pyproject.toml
+
+      - name: Install test dependencies
+        run: python -m pip install -e '.[test]'
+
+      - name: Run tests
+        run: python -m pytest -q
+
+  metadata:
+    name: Repository metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Home Assistant YAML
+        run: |
+          ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts "valid YAML: #{path}" }' repository.yaml spaghetti_ai/config.yaml spaghetti_ai/HA_AUTOMATIONS.yaml.example
+
+      - name: Check for local-only identifiers
+        run: |
+          if git grep -n -E '192\.168\.178\.|notify\.mobile_app_iphone_von_johann|/Users/Johann' -- README.md spaghetti_ai; then
+            echo "Found a local-only identifier in public files"
+            exit 1
+          fi

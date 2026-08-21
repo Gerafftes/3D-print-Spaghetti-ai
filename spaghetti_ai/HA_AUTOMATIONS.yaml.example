@@ -1,0 +1,25 @@
+# Documentation-only template. Home Assistant does not load this .example file.
+# Replace the notification service and keep the automation disabled until the
+# shadow-mode and controlled pause/continue tests have passed.
+- id: spaghetti_ai_alarm_aufs_iphone
+  alias: Spaghetti AI - Alarm aufs iPhone (Vorlage, deaktiviert)
+  description: Sends a printer-camera image for a manual decision.
+  mode: single
+  initial_state: false
+  trigger:
+    - platform: mqtt
+      topic: spaghetti_ai/alert
+  condition: []
+  action:
+    - service: "notify.mobile_app_<your_device>"
+      data:
+        title: "Spaghetti AI: Druck prüfen"
+        message: "Möglicher Druckfehler erkannt."
+        data:
+          image: "{{ trigger.payload_json.image }}"
+          tag: spaghetti-ai
+          actions:
+            - action: SPAGHETTI_CONTINUE
+              title: Weiterdrucken
+            - action: SPAGHETTI_PAUSE
+              title: Pausieren

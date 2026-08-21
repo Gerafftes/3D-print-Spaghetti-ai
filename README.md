@@ -4,9 +4,9 @@
 [![Home Assistant App](https://img.shields.io/badge/Home%20Assistant-App-41BDF5?logo=homeassistant&logoColor=white)](https://developers.home-assistant.io/docs/apps/repository/)
 [![Architecture: aarch64](https://img.shields.io/badge/architecture-aarch64-6f42c1)](spaghetti_ai/build.yaml)
 [![Default mode: shadow](https://img.shields.io/badge/default%20mode-shadow%20safe-2ea44f)](#safety-model)
+[![Validate](https://github.com/Gerafftes/3D-print-Spaghetti-ai/actions/workflows/validate.yml/badge.svg)](https://github.com/Gerafftes/3D-print-Spaghetti-ai/actions/workflows/validate.yml)
 
 A local, CPU-only print-failure detector for the FlashForge Guider 2S that watches camera snapshots and reports confirmed events to Home Assistant over MQTT.
-
 
 ![Live view from the Guider 2S printer camera](devlog-01-printer-camera.jpg)
 
@@ -25,6 +25,10 @@ This repository is a **Home Assistant app repository**, not a HACS custom integr
 A typical Guider 2S snapshot URL has the form `http://PRINTER_IP:8080/?action=snapshot`. Do not expose the camera or the status API to the public internet.
 
 Apps are available on Home Assistant OS and Supervised installations. See the [official app repository guide](https://developers.home-assistant.io/docs/apps/repository/) for the repository workflow.
+
+The [notification template](spaghetti_ai/HA_AUTOMATIONS.yaml.example) is documentation-only and disabled by default. Replace the device placeholder before use; do not enable it until the shadow and pause/continue tests are complete.
+
+See the [app behavior and validation notes](spaghetti_ai/DOCS.md) for defaults, retention, and the production gate.
 
 ## What it does
 
